@@ -31,7 +31,7 @@ export const getTGUpdatesFront = async (username: string): Promise<number> => {
     for (const update of updates) {
       if (update.message) {
         const user = update.message.from;
-        if (user.username === username) {
+        if (user.username.toLowerCase() === username.toLowerCase()) {
           return user.id;
         }
       }
