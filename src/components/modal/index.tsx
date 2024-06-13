@@ -127,6 +127,7 @@ export const Modal: FC<TProps> = ({
               isRequestLoading
             }
             variant="contained"
+            sx={{ minWidth: "123px", minHeight: "36px" }}
           >
             {isRequestLoading ? (
               <Loader size={24} />

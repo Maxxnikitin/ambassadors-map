@@ -46,7 +46,7 @@ export const MyMap: FC = () => {
           modules={["control.ZoomControl"]}
           width="100%"
           height={"100dvh"}
-          onClick={handleMapClick}
+          onContextMenu={handleMapClick}
           onLoad={handleLoad}
         >
           {allUsersData.map((user, index) => (

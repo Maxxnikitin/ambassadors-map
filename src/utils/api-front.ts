@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import { TUserData } from "./types";
 
 const TELEGRAM_API_URL = process.env.NEXT_PUBLIC_TELEGRAM_API_URL;
+const TG_CHAT_NAME = process.env.NEXT_PUBLIC_TG_CHAT_NAME;
 
 export const checkResponse: <T>(res: AxiosResponse<T>) => T | Promise<T> = (
   res
@@ -49,7 +50,7 @@ export const getIsUserAmbassadorFront = async (
   try {
     const response = await axios.get(`${TELEGRAM_API_URL}/getChatMember`, {
       params: {
-        chat_id: "@dailyFrontend",
+        chat_id: TG_CHAT_NAME,
         user_id: userId,
       },
     });
