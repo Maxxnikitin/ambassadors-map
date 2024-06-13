@@ -55,10 +55,9 @@ export const MyMap: FC = () => {
               key={index}
               geometry={user.coords}
               properties={{
-                // balloonContent: user.name,
-                // hintContent: user.name,
-                // iconContent: `<img src="${user.avatar}" alt="Аватар." style="width:100px;height:100px;"/></div>`,
-                balloonContentBody: `${user.name}<br />${user.description}`,
+                balloonContentBody: `${user.name}<br />${
+                  user.description ?? ""
+                }`,
               }}
               options={{
                 iconLayout: "default#image",
