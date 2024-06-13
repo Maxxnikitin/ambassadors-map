@@ -18,6 +18,7 @@ export const useYandexMap = () => {
 
   const handleMapClick = (e: any) => {
     const coords = e.get("coords");
+    console.log(coords);
     setUserData((prev) => ({ ...prev, coords }));
     handleModalOpen();
   };
@@ -26,7 +27,21 @@ export const useYandexMap = () => {
     setLoading(false);
   };
 
-  const handleModalOpen = () => setIsModalOpen(true);
+  const handleModalOpen = () => {
+    const prevData = localStorage.getItem("currUser");
+
+    if (prevData) {
+      const data = JSON.parse(prevData);
+      setUserData((prev) => ({
+        ...prev,
+        name: data.name,
+        usernameTG: data.usernameTG,
+        description: data.description,
+        avatar: data.avatar,
+      }));
+    }
+    setIsModalOpen(true);
+  };
 
   const handleModalClose = () => {
     setUserData(null);
@@ -43,13 +58,20 @@ export const useYandexMap = () => {
     setIsRequestLoading(true);
 
     try {
-      const userId = await getTGUpdatesFront(userData?.usernameTG ?? "");
+      const userId = await getTGUpdatesFront(
+        userData?.usernameTG?.toLowerCase() ?? ""
+      );
 
       const isAmbassador = await getIsUserAmbassadorFront(userId);
 
       if (isAmbassador) {
-        const { data } = await postUserDataFront(userData!);
+        const updatedData = {
+          ...userData,
+          usernameTG: userData?.usernameTG?.toLowerCase(),
+        };
+        const { data } = await postUserDataFront(updatedData);
         setAllUsersData(data);
+        localStorage.setItem("currUser", JSON.stringify(userData));
         handleModalClose();
       } else {
         setError(

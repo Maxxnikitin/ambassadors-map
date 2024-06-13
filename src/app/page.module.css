@@ -3,13 +3,5 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  /* padding: 20px; */
   min-height: 100vh;
-  height: 100%;
-}
-
-@media screen and (max-width: 500px) {
-  .main {
-    padding: 0;
-  }
 }
