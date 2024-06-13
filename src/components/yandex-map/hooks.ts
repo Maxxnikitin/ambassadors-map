@@ -5,7 +5,7 @@ import {
   postUserDataFront,
 } from "@/utils/api-front";
 import { TUserData } from "@/utils/types";
-import { ChangeEventHandler, useEffect, useState } from "react";
+import { ChangeEventHandler, useCallback, useEffect, useState } from "react";
 
 export const useYandexMap = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,6 +57,13 @@ export const useYandexMap = () => {
     setIsRequestLoading(true);
 
     try {
+      const isImg = await isImageUrl(userData?.avatar!);
+
+      if (!isImg) {
+        setError("Пожалуйста, введите корректную ссылку на изображение");
+        return;
+      }
+
       const userId = await getTGUpdatesFront(
         userData?.usernameTG?.toLowerCase() ?? ""
       );
@@ -81,14 +88,41 @@ export const useYandexMap = () => {
     }
   };
 
+  const isImageUrl = async (url: string) => {
+    try {
+      const response = await fetch(url, { method: "HEAD" });
+      const contentType = response.headers.get("content-type");
+      return !!(contentType && contentType.startsWith("image/"));
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const updatesAllUsersData = useCallback(async (data: TUserData[]) => {
+    const res: TUserData[] = [];
+
+    for (let item of data) {
+      const isImage = await isImageUrl(item.avatar!);
+
+      res.push({ ...item, avatar: isImage ? item.avatar! : "" });
+    }
+
+    setAllUsersData(res);
+    setUsersLoading(false);
+  }, []);
+
   useEffect(() => {
     setUsersLoading(true);
     getUsersDataFront()
       .then(({ data }) => {
+        // updatesAllUsersData(data);
         setAllUsersData(data);
+        setUsersLoading(false);
       })
-      .catch((err) => console.log(err))
-      .finally(() => setUsersLoading(false));
+      .catch((err) => {
+        console.log(err);
+        setUsersLoading(false);
+      });
   }, []);
 
   return {
