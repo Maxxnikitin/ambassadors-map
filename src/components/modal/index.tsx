@@ -30,7 +30,7 @@ export const Modal: FC<TProps> = ({
   handleChange,
   handleSave,
 }) => {
-  const isMobile = window.innerWidth <= 500;
+  const isMobile = global.innerWidth <= 500;
 
   const namesWidth = isMobile ? 12 : 4;
   const valuesWidth = isMobile ? 12 : 8;
