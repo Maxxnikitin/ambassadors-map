@@ -57,15 +57,13 @@ export const useYandexMap = () => {
     setIsRequestLoading(true);
 
     try {
-      const userId = await getTGUpdatesFront(
-        userData?.usernameTG?.toLowerCase() ?? ""
-      );
+      const userId = await getTGUpdatesFront(userData?.usernameTG ?? "");
 
       await getIsUserAmbassadorFront(userId);
 
       const updatedData = {
         ...userData,
-        usernameTG: userData?.usernameTG?.toLowerCase(),
+        usernameTG: userData?.usernameTG,
       };
       const { data } = await postUserDataFront(updatedData);
       setAllUsersData(data);
