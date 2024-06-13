@@ -18,7 +18,6 @@ export const useYandexMap = () => {
 
   const handleMapClick = (e: any) => {
     const coords = e.get("coords");
-    console.log(coords);
     setUserData((prev) => ({ ...prev, coords }));
     handleModalOpen();
   };
@@ -62,26 +61,20 @@ export const useYandexMap = () => {
         userData?.usernameTG?.toLowerCase() ?? ""
       );
 
-      const isAmbassador = await getIsUserAmbassadorFront(userId);
+      await getIsUserAmbassadorFront(userId);
 
-      if (isAmbassador) {
-        const updatedData = {
-          ...userData,
-          usernameTG: userData?.usernameTG?.toLowerCase(),
-        };
-        const { data } = await postUserDataFront(updatedData);
-        setAllUsersData(data);
-        localStorage.setItem("currUser", JSON.stringify(userData));
-        handleModalClose();
-      } else {
-        setError(
-          "Оставлять геометки могут только амбассадоры. Обратитесь к @maxxnikitin"
-        );
-      }
+      const updatedData = {
+        ...userData,
+        usernameTG: userData?.usernameTG?.toLowerCase(),
+      };
+      const { data } = await postUserDataFront(updatedData);
+      setAllUsersData(data);
+      localStorage.setItem("currUser", JSON.stringify(userData));
+      handleModalClose();
     } catch (e) {
       console.log(e);
       setError(
-        "Оставлять геометки могут только амбассадоры. Обратитесь к @maxxnikitin"
+        "Оставлять геометки могут только амбассадоры. Обратитесь в TG к @maxxnikitin"
       );
     } finally {
       setIsRequestLoading(false);
