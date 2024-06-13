@@ -1,9 +1,8 @@
 "use client";
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 import { YMaps, Map, Placemark } from "@pbe/react-yandex-maps";
 import { Loader } from "../loader";
 import { Stack } from "@mui/material";
-import { TUserData } from "@/utils/types";
 import { useYandexMap } from "./hooks";
 import { Modal } from "../modal";
 
@@ -59,13 +58,17 @@ export const MyMap: FC = () => {
                   user.description ?? ""
                 }`,
               }}
-              options={{
-                iconLayout: "default#image",
-                iconImageHref: user.avatar,
-                iconImageSize: [40, 40],
-                hideIconOnBalloonOpen: false,
-                iconImageOffset: [-20, -20],
-              }}
+              options={
+                user.avatar
+                  ? {
+                      iconLayout: "default#image",
+                      iconImageHref: user.avatar,
+                      iconImageSize: [40, 40],
+                      hideIconOnBalloonOpen: false,
+                      iconImageOffset: [-20, -20],
+                    }
+                  : {}
+              }
             />
           ))}
         </Map>
