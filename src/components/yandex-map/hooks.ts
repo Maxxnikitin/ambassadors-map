@@ -64,11 +64,18 @@ export const useYandexMap = () => {
         return;
       }
 
-      const userId = await getTGUpdatesFront(
-        userData?.usernameTG?.toLowerCase() ?? ""
+      const isUserExist = !!allUsersData.find(
+        ({ usernameTG }) =>
+          usernameTG?.toLowerCase() === userData?.usernameTG?.toLowerCase()
       );
 
-      await getIsUserAmbassadorFront(userId);
+      if (!isUserExist) {
+        const userId = await getTGUpdatesFront(
+          userData?.usernameTG?.toLowerCase() ?? ""
+        );
+
+        await getIsUserAmbassadorFront(userId);
+      }
 
       const updatedData = {
         ...userData,

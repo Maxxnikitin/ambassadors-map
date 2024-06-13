@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios";
-import { TUserData } from "./types";
+import { TTGMessage, TUserData } from "./types";
 
 const TELEGRAM_API_URL = process.env.NEXT_PUBLIC_TELEGRAM_API_URL;
 const TG_CHAT_NAME = process.env.NEXT_PUBLIC_TG_CHAT_NAME;
@@ -24,11 +24,23 @@ export const postUserDataFront = (newUser: TUserData) =>
     .then((res: AxiosResponse<{ data: TUserData[] }>) => checkResponse(res));
 
 export const getTGUpdatesFront = async (username: string): Promise<number> => {
-  try {
-    const response = await axios.get(`${TELEGRAM_API_URL}/getUpdates`);
-    const updates = response.data.result;
+  let allUpdates: TTGMessage[] = [];
+  let offset = 0;
 
-    for (const update of updates) {
+  try {
+    while (true) {
+      const { data } = await axios.get(
+        `${TELEGRAM_API_URL}/getUpdates?offset=${offset}`
+      );
+      allUpdates = allUpdates.concat(data.result);
+      if (data.result.length < 100) {
+        break;
+      }
+
+      offset = data.result[data.result.length - 1].update_id + 1;
+    }
+
+    for (const update of allUpdates) {
       if (update.message) {
         const user = update.message.from;
         if (user.username.toLowerCase() === username.toLowerCase()) {
