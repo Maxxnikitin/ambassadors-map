@@ -7,17 +7,12 @@ import {
 import { TUserData } from "@/utils/types";
 import { ChangeEventHandler, useEffect, useState } from "react";
 
-type TPlacemarkData = {
-  coords: number[];
-  info: string;
-};
-
 export const useYandexMap = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userData, setUserData] = useState<TUserData | null>(null);
   const [allUsersData, setAllUsersData] = useState<TUserData[]>([]);
-  // const [placemarks, setPlacemarks] = useState<TPlacemarkData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [usersLoading, setUsersLoading] = useState(false);
   const [isRequestLoading, setIsRequestLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -29,10 +24,6 @@ export const useYandexMap = () => {
 
   const handleLoad = () => {
     setLoading(false);
-  };
-
-  const handlePlacemarkClick = (placemark: TPlacemarkData) => {
-    console.log(placemark);
   };
 
   const handleModalOpen = () => setIsModalOpen(true);
@@ -57,7 +48,6 @@ export const useYandexMap = () => {
       const isAmbassador = await getIsUserAmbassadorFront(userId);
 
       if (isAmbassador) {
-        // setPlacemarks([{ coords: userData?.coords!, info: userData?.name! }]);
         const { data } = await postUserDataFront(userData!);
         setAllUsersData(data);
         handleModalClose();
@@ -77,19 +67,18 @@ export const useYandexMap = () => {
   };
 
   useEffect(() => {
+    setUsersLoading(true);
     getUsersDataFront()
       .then(({ data }) => {
         setAllUsersData(data);
-        // setPlacemarks(
-        //   data.map((item) => ({ coords: item.coords!, info: item.name! }))
-        // );
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.log(err))
+      .finally(() => setUsersLoading(false));
   }, []);
 
   return {
-    // placemarks,
     loading,
+    usersLoading,
     isModalOpen,
     userData,
     allUsersData,
@@ -97,7 +86,6 @@ export const useYandexMap = () => {
     isRequestLoading,
     handleMapClick,
     handleLoad,
-    handlePlacemarkClick,
     handleModalOpen,
     handleModalClose,
     handleChange,

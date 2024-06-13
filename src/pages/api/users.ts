@@ -1,4 +1,6 @@
-import { addUser, getUsers } from "@/utils/database";
+import dbConnect from "@/lib/mongodb";
+import User from "@/models/Users";
+import { TUserData } from "@/utils/types";
 import { AxiosError } from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 
@@ -11,10 +13,12 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
 ) {
+  await dbConnect();
+
   switch (req.method) {
     case "GET":
       try {
-        const data = getUsers();
+        const data = await User.find({});
 
         res.status(200).json({ data, message: "success" });
       } catch (e) {
@@ -27,9 +31,19 @@ export default async function handler(
 
     case "POST":
       try {
-        const newUser = req.body;
+        const newUser = req.body as TUserData;
 
-        const data = addUser(newUser);
+        const updatedUser = await User.findOneAndUpdate(
+          { usernameTG: newUser.usernameTG },
+          { ...newUser, description: newUser.description ?? "" },
+          { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+          await User.create(newUser);
+        }
+
+        const data = await User.find({});
 
         res.status(200).json({ data, message: "success" });
       } catch (e) {

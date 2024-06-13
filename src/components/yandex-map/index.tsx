@@ -11,8 +11,8 @@ const apikey = process.env.NEXT_PUBLIC_YANDEX_MAP_API_KEY;
 
 export const MyMap: FC = () => {
   const {
-    // placemarks,
     loading,
+    usersLoading,
     isModalOpen,
     userData,
     allUsersData,
@@ -20,7 +20,6 @@ export const MyMap: FC = () => {
     isRequestLoading,
     handleMapClick,
     handleLoad,
-    handlePlacemarkClick,
     handleModalClose,
     handleChange,
     handleSave,
@@ -37,7 +36,7 @@ export const MyMap: FC = () => {
           apikey,
         }}
       >
-        {loading && <Loader />}
+        {(loading || usersLoading) && <Loader />}
         <Map
           defaultState={{
             center: [55.030199, 82.92043],
@@ -46,7 +45,7 @@ export const MyMap: FC = () => {
           }}
           modules={["control.ZoomControl"]}
           width="100%"
-          height={loading ? 0 : "calc(100dvh - 40px)"}
+          height={"100dvh"}
           onClick={handleMapClick}
           onLoad={handleLoad}
         >
@@ -56,10 +55,10 @@ export const MyMap: FC = () => {
               key={index}
               geometry={user.coords}
               properties={{
-                balloonContent: user.name,
-                hintContent: user.name,
-                iconContent: `<img src="${user.avatar}" alt="Аватар." style="width:100px;height:100px;"/></div>`,
-                balloonContentBody: user.name,
+                // balloonContent: user.name,
+                // hintContent: user.name,
+                // iconContent: `<img src="${user.avatar}" alt="Аватар." style="width:100px;height:100px;"/></div>`,
+                balloonContentBody: `${user.name}<br />${user.description}`,
               }}
               options={{
                 iconLayout: "default#image",
@@ -68,7 +67,6 @@ export const MyMap: FC = () => {
                 hideIconOnBalloonOpen: false,
                 iconImageOffset: [-20, -20],
               }}
-              // onClick={() => handlePlacemarkClick(placemark)}
             />
           ))}
         </Map>
