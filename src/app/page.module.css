@@ -1,8 +1,15 @@
 .main {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 6rem;
+  /* padding: 20px; */
   min-height: 100vh;
+  height: 100%;
+}
+
+@media screen and (max-width: 500px) {
+  .main {
+    padding: 0;
+  }
 }
