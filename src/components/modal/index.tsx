@@ -15,6 +15,7 @@ type TProps = {
   isModalOpen: boolean;
   userData: TUserData | null;
   error: string;
+  tgError: string;
   isRequestLoading: boolean;
   handleModalClose: () => void;
   handleSave: () => void;
@@ -25,6 +26,7 @@ export const Modal: FC<TProps> = ({
   isModalOpen,
   userData,
   error,
+  tgError,
   isRequestLoading,
   handleModalClose,
   handleChange,
@@ -34,6 +36,13 @@ export const Modal: FC<TProps> = ({
 
   const namesWidth = isMobile ? 12 : 4;
   const valuesWidth = isMobile ? 12 : 8;
+
+  const isSubmitBtnDisabled =
+    !userData?.name ||
+    !userData?.usernameTG ||
+    !userData?.avatar ||
+    !!tgError ||
+    isRequestLoading;
 
   return (
     <Dialog
@@ -72,7 +81,13 @@ export const Modal: FC<TProps> = ({
               value={userData?.usernameTG ?? ""}
               sx={{ width: "100%" }}
               disabled={isRequestLoading}
+              error={!!tgError}
             />
+            {tgError && (
+              <FormHelperText sx={{ fontSize: "14px", color: "#f00" }}>
+                {tgError}
+              </FormHelperText>
+            )}
           </Grid>
           <Grid item xs={namesWidth}>
             <FormHelperText sx={{ fontSize: "18px" }}>Аватар</FormHelperText>
@@ -106,7 +121,7 @@ export const Modal: FC<TProps> = ({
         </Grid>
 
         {error && (
-          <FormHelperText sx={{ fontSize: "18px", color: "#f00" }}>
+          <FormHelperText sx={{ fontSize: "14px", color: "#f00" }}>
             {error}
           </FormHelperText>
         )}
@@ -120,12 +135,7 @@ export const Modal: FC<TProps> = ({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={
-              !userData?.name ||
-              !userData?.usernameTG ||
-              !userData?.avatar ||
-              isRequestLoading
-            }
+            disabled={isSubmitBtnDisabled}
             variant="contained"
             sx={{ minWidth: "123px", minHeight: "36px" }}
           >

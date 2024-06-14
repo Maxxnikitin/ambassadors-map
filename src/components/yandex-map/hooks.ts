@@ -15,6 +15,7 @@ export const useYandexMap = () => {
   const [usersLoading, setUsersLoading] = useState(false);
   const [isRequestLoading, setIsRequestLoading] = useState(false);
   const [error, setError] = useState("");
+  const [tgError, setTgError] = useState("");
 
   const handleMapClick = (e: any) => {
     const coords = e.get("coords");
@@ -46,10 +47,21 @@ export const useYandexMap = () => {
     setUserData(null);
     setIsModalOpen(false);
     setError("");
+    setTgError("");
   };
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = ({ target }) => {
-    setUserData((prev) => ({ ...prev, [target.id]: target.value }));
+    const { id, value } = target;
+    setUserData((prev) => ({ ...prev, [id]: value }));
+    if (id === "usernameTG") {
+      if (value.startsWith("@")) {
+        setTgError('Введите логин без "@"');
+      } else if (value.startsWith("http")) {
+        setTgError("Введите логин, а не ссылку");
+      } else {
+        setTgError("");
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -139,6 +151,7 @@ export const useYandexMap = () => {
     userData,
     allUsersData,
     error,
+    tgError,
     isRequestLoading,
     handleMapClick,
     handleLoad,

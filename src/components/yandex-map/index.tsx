@@ -16,6 +16,7 @@ export const MyMap: FC = () => {
     userData,
     allUsersData,
     error,
+    tgError,
     isRequestLoading,
     handleMapClick,
     handleLoad,
@@ -38,7 +39,7 @@ export const MyMap: FC = () => {
         {(loading || usersLoading) && <Loader />}
         <Map
           defaultState={{
-            center: [55.030199, 82.92043],
+            center: [43.222, 76.8512],
             zoom: 4,
             controls: ["zoomControl"],
           }}
@@ -77,6 +78,7 @@ export const MyMap: FC = () => {
         isModalOpen={isModalOpen}
         userData={userData}
         error={error}
+        tgError={tgError}
         isRequestLoading={isRequestLoading}
         handleModalClose={handleModalClose}
         handleChange={handleChange}
