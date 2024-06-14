@@ -25,6 +25,12 @@ const ensureUploadDirExists = async () => {
   }
 };
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
@@ -35,7 +41,6 @@ export default async function handler(
     case "GET":
       try {
         const data = await User.find({});
-
         res.status(200).json({ data, message: "success" });
       } catch (e) {
         const error = e as AxiosError;
@@ -56,7 +61,7 @@ export default async function handler(
 
         form.parse(req, async (err: Error, fields: Fields, files: Files) => {
           if (err) {
-            throw new Error(err.message);
+            return res.status(500).json({ message: err.message });
           }
 
           const fileArray =
@@ -77,7 +82,6 @@ export default async function handler(
             usernameTG: usernameTG![0],
           });
 
-          // Если пользователь найден и у него есть файл, удалить старый файл
           if (existingUser && existingUser.avatar && file) {
             const oldFilePath = path.join(
               process.cwd(),
@@ -113,8 +117,7 @@ export default async function handler(
           }
 
           const data = await User.find({});
-
-          res.status(200).json({ data, message: "success" });
+          return res.status(200).json({ data, message: "success" });
         });
       } catch (e) {
         const error = e as AxiosError;
@@ -123,5 +126,8 @@ export default async function handler(
           .json({ message: error.message });
       }
       break;
+
+    default:
+      res.status(405).json({ message: "Method not allowed" });
   }
 }
