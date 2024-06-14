@@ -11,7 +11,7 @@ interface IUser extends Document {
 const UserSchema: Schema<IUser> = new Schema({
   name: { type: String, required: true },
   usernameTG: { type: String, required: true },
-  avatar: { type: String, required: true },
+  avatar: { type: String, required: false },
   description: { type: String, required: false },
   coords: {
     type: [Number],

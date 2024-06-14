@@ -18,7 +18,7 @@ export const getUsersDataFront = () =>
     .get(`/api/users`)
     .then((res: AxiosResponse<{ data: TUserData[] }>) => checkResponse(res));
 
-export const postUserDataFront = (newUser: TUserData) =>
+export const postUserDataFront = (newUser: FormData) =>
   axios
     .post(`/api/users`, newUser)
     .then((res: AxiosResponse<{ data: TUserData[] }>) => checkResponse(res));

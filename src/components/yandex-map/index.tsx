@@ -7,6 +7,7 @@ import { useYandexMap } from "./hooks";
 import { Modal } from "../modal";
 
 const apikey = process.env.NEXT_PUBLIC_YANDEX_MAP_API_KEY;
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 export const MyMap: FC = () => {
   const {
@@ -14,6 +15,7 @@ export const MyMap: FC = () => {
     usersLoading,
     isModalOpen,
     userData,
+    avatarFile,
     allUsersData,
     error,
     tgError,
@@ -22,6 +24,7 @@ export const MyMap: FC = () => {
     handleLoad,
     handleModalClose,
     handleChange,
+    handleFileChange,
     handleSave,
   } = useYandexMap();
 
@@ -63,7 +66,7 @@ export const MyMap: FC = () => {
                 user.avatar
                   ? {
                       iconLayout: "default#image",
-                      iconImageHref: user.avatar,
+                      iconImageHref: `${baseUrl}/${user.avatar}`,
                       iconImageSize: [40, 40],
                       hideIconOnBalloonOpen: false,
                       iconImageOffset: [-20, -20],
@@ -77,11 +80,13 @@ export const MyMap: FC = () => {
       <Modal
         isModalOpen={isModalOpen}
         userData={userData}
+        avatarFile={avatarFile}
         error={error}
         tgError={tgError}
         isRequestLoading={isRequestLoading}
         handleModalClose={handleModalClose}
         handleChange={handleChange}
+        handleFileChange={handleFileChange}
         handleSave={handleSave}
       />
     </Stack>
