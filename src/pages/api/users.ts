@@ -2,34 +2,24 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import formidable, { Fields, Files } from "formidable";
 import fs from "fs";
 import path from "path";
+import fetch from "node-fetch";
 import { promisify } from "util";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/Users";
 import { AxiosError } from "axios";
+import { Dropbox, sharing } from "dropbox";
 
 type ResponseData = {
   data?: unknown;
   message: string;
 };
 
-const uploadDir = path.join(process.cwd(), "/public/uploads");
-const fsAccess = promisify(fs.access);
-const fsMkdir = promisify(fs.mkdir);
+const dbx = new Dropbox({
+  accessToken: process.env.DROPBOX_TOKEN,
+  fetch: fetch,
+});
+
 const fsUnlink = promisify(fs.unlink);
-
-const ensureUploadDirExists = async () => {
-  try {
-    await fsAccess(uploadDir);
-  } catch (error) {
-    await fsMkdir(uploadDir, { recursive: true });
-  }
-};
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
 
 export default async function handler(
   req: NextApiRequest,
@@ -52,12 +42,7 @@ export default async function handler(
 
     case "POST":
       try {
-        await ensureUploadDirExists();
-
-        const form = formidable({
-          uploadDir,
-          keepExtensions: true,
-        });
+        const form = formidable({ keepExtensions: true });
 
         form.parse(req, async (err: Error, fields: Fields, files: Files) => {
           if (err) {
@@ -68,12 +53,34 @@ export default async function handler(
             files.file instanceof Array ? files.file : [files.file];
           const file = fileArray[0];
 
-          let fileUrl;
+          let fileUrl: string | undefined;
 
           if (file) {
-            const filePath = file.filepath;
-            const fileName = path.basename(filePath);
-            fileUrl = `/uploads/${fileName}`;
+            const fileContent = fs.readFileSync(file.filepath);
+            const fileName = `${Date.now()}_${path.basename(file.filepath)}`;
+
+            try {
+              const response = await dbx.filesUpload({
+                path: `/${fileName}`,
+                contents: fileContent,
+              });
+
+              // Получение публичной ссылки на файл
+              const sharedLinkResponse =
+                await dbx.sharingCreateSharedLinkWithSettings({
+                  path: response.result.path_display!,
+                  settings: {
+                    requested_visibility: { ".tag": "public" },
+                  },
+                });
+
+              fileUrl = sharedLinkResponse.result.url.replace("dl=0", "raw=1"); // преобразование URL для прямого доступа к изображению
+              await fsUnlink(file.filepath);
+            } catch (uploadError) {
+              return res
+                .status(500)
+                .json({ message: (uploadError as Error).message });
+            }
           }
 
           const { name, usernameTG, description, coords } = fields;
@@ -81,22 +88,6 @@ export default async function handler(
           const existingUser = await User.findOne({
             usernameTG: usernameTG![0],
           });
-
-          if (existingUser && existingUser.avatar && file) {
-            const oldFilePath = path.join(
-              process.cwd(),
-              "/public",
-              existingUser.avatar
-            );
-            try {
-              await fsUnlink(oldFilePath);
-            } catch (unlinkErr) {
-              console.error(
-                `Failed to delete old file: ${oldFilePath}`,
-                unlinkErr
-              );
-            }
-          }
 
           const newUser = {
             name: name![0],
@@ -107,9 +98,19 @@ export default async function handler(
           };
 
           if (existingUser) {
+            if (existingUser.avatar && fileUrl) {
+              try {
+                await dbx.filesDeleteV2({ path: existingUser.avatar });
+              } catch (deleteError) {
+                console.error(
+                  `Failed to delete old file: ${existingUser.avatar}`,
+                  deleteError
+                );
+              }
+            }
             await User.findOneAndUpdate(
               { usernameTG: newUser.usernameTG },
-              { ...newUser },
+              newUser,
               { new: true, runValidators: true }
             );
           } else {
@@ -117,7 +118,7 @@ export default async function handler(
           }
 
           const data = await User.find({});
-          return res.status(200).json({ data, message: "success" });
+          res.status(200).json({ data, message: "success" });
         });
       } catch (e) {
         const error = e as AxiosError;
