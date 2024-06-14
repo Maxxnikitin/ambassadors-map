@@ -66,7 +66,9 @@ export const MyMap: FC = () => {
                 user.avatar
                   ? {
                       iconLayout: "default#image",
-                      iconImageHref: `${baseUrl}/${user.avatar}`,
+                      iconImageHref: user.avatar.startsWith("/")
+                        ? `${baseUrl}/${user.avatar}`
+                        : user.avatar,
                       iconImageSize: [40, 40],
                       hideIconOnBalloonOpen: false,
                       iconImageOffset: [-20, -20],
