@@ -5,7 +5,7 @@ import {
   postUserDataFront,
 } from "@/utils/api-front";
 import { TUserData } from "@/utils/types";
-import { ChangeEventHandler, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, ChangeEventHandler, useEffect, useState } from "react";
 
 export const useYandexMap = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,6 +16,13 @@ export const useYandexMap = () => {
   const [isRequestLoading, setIsRequestLoading] = useState(false);
   const [error, setError] = useState("");
   const [tgError, setTgError] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
+  const handleFileChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
+    if (target.files && target.files[0]) {
+      setAvatarFile(target.files![0]);
+    }
+  };
 
   const handleMapClick = (e: any) => {
     const coords = e.get("coords");
@@ -37,7 +44,6 @@ export const useYandexMap = () => {
         name: data.name,
         usernameTG: data.usernameTG,
         description: data.description,
-        avatar: data.avatar,
       }));
     }
     setIsModalOpen(true);
@@ -48,6 +54,7 @@ export const useYandexMap = () => {
     setIsModalOpen(false);
     setError("");
     setTgError("");
+    setAvatarFile(null);
   };
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = ({ target }) => {
@@ -67,20 +74,12 @@ export const useYandexMap = () => {
   const handleSave = async () => {
     setError("");
     setIsRequestLoading(true);
+    const isUserExist = !!allUsersData.find(
+      ({ usernameTG }) =>
+        usernameTG?.toLowerCase() === userData?.usernameTG?.toLowerCase()
+    );
 
     try {
-      const isImg = await isImageUrl(userData?.avatar!);
-
-      if (!isImg) {
-        setError("Пожалуйста, введите корректную ссылку на изображение");
-        return;
-      }
-
-      const isUserExist = !!allUsersData.find(
-        ({ usernameTG }) =>
-          usernameTG?.toLowerCase() === userData?.usernameTG?.toLowerCase()
-      );
-
       if (!isUserExist) {
         const userId = await getTGUpdatesFront(
           userData?.usernameTG?.toLowerCase() ?? ""
@@ -93,7 +92,15 @@ export const useYandexMap = () => {
         ...userData,
         usernameTG: userData?.usernameTG?.toLowerCase(),
       };
-      const { data } = await postUserDataFront(updatedData);
+
+      const formData = new FormData();
+      formData.append("file", avatarFile ?? "");
+      formData.append("name", updatedData.name!);
+      formData.append("usernameTG", updatedData.usernameTG!);
+      formData.append("description", updatedData.description ?? "");
+      formData.append("coords", JSON.stringify(updatedData.coords));
+
+      const { data } = await postUserDataFront(formData);
       setAllUsersData(data);
       localStorage.setItem("currUser", JSON.stringify(userData));
       handleModalClose();
@@ -107,34 +114,10 @@ export const useYandexMap = () => {
     }
   };
 
-  const isImageUrl = async (url: string) => {
-    try {
-      const response = await fetch(url, { method: "HEAD" });
-      const contentType = response.headers.get("content-type");
-      return !!(contentType && contentType.startsWith("image/"));
-    } catch (error) {
-      return false;
-    }
-  };
-
-  const updatesAllUsersData = useCallback(async (data: TUserData[]) => {
-    const res: TUserData[] = [];
-
-    for (let item of data) {
-      const isImage = await isImageUrl(item.avatar!);
-
-      res.push({ ...item, avatar: isImage ? item.avatar! : "" });
-    }
-
-    setAllUsersData(res);
-    setUsersLoading(false);
-  }, []);
-
   useEffect(() => {
     setUsersLoading(true);
     getUsersDataFront()
       .then(({ data }) => {
-        // updatesAllUsersData(data);
         setAllUsersData(data);
         setUsersLoading(false);
       })
@@ -149,6 +132,7 @@ export const useYandexMap = () => {
     usersLoading,
     isModalOpen,
     userData,
+    avatarFile,
     allUsersData,
     error,
     tgError,
@@ -158,6 +142,7 @@ export const useYandexMap = () => {
     handleModalOpen,
     handleModalClose,
     handleChange,
+    handleFileChange,
     handleSave,
   };
 };

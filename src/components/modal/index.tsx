@@ -14,22 +14,26 @@ import { TUserData } from "@/utils/types";
 type TProps = {
   isModalOpen: boolean;
   userData: TUserData | null;
+  avatarFile: File | null;
   error: string;
   tgError: string;
   isRequestLoading: boolean;
   handleModalClose: () => void;
   handleSave: () => void;
   handleChange: ChangeEventHandler<HTMLInputElement>;
+  handleFileChange: ChangeEventHandler<HTMLInputElement>;
 };
 
 export const Modal: FC<TProps> = ({
   isModalOpen,
   userData,
+  avatarFile,
   error,
   tgError,
   isRequestLoading,
   handleModalClose,
   handleChange,
+  handleFileChange,
   handleSave,
 }) => {
   const isMobile = global.innerWidth <= 500;
@@ -40,7 +44,7 @@ export const Modal: FC<TProps> = ({
   const isSubmitBtnDisabled =
     !userData?.name ||
     !userData?.usernameTG ||
-    !userData?.avatar ||
+    // !avatarFile ||
     !!tgError ||
     isRequestLoading;
 
@@ -94,10 +98,10 @@ export const Modal: FC<TProps> = ({
           </Grid>
           <Grid item xs={valuesWidth}>
             <TextField
+              type="file"
               id="avatar"
               placeholder="Введите ссылку на изображение"
-              onChange={handleChange}
-              value={userData?.avatar ?? ""}
+              onChange={handleFileChange}
               sx={{ width: "100%" }}
               disabled={isRequestLoading}
             />
