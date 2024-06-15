@@ -85,8 +85,8 @@ export default async function handler(
               await fsUnlink(file.filepath);
             } catch (uploadError) {
               return res
-                .status(500)
-                .json({ message: (uploadError as Error).message });
+                .status(409)
+                .json({ message: (uploadError as any).error });
             }
           }
 
