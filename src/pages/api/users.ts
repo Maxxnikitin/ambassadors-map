@@ -72,7 +72,6 @@ export default async function handler(
                 contents: fileContent,
               });
 
-              // Получение публичной ссылки на файл
               const sharedLinkResponse =
                 await dbx.sharingCreateSharedLinkWithSettings({
                   path: response.result.path_display!,
