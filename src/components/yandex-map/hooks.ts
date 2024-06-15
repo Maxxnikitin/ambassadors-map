@@ -78,16 +78,22 @@ export const useYandexMap = () => {
       ({ usernameTG }) =>
         usernameTG?.toLowerCase() === userData?.usernameTG?.toLowerCase()
     );
-
-    try {
-      if (!isUserExist) {
+    if (!isUserExist) {
+      try {
         const userId = await getTGUpdatesFront(
           userData?.usernameTG?.toLowerCase() ?? ""
         );
 
         await getIsUserAmbassadorFront(userId);
+      } catch (e) {
+        console.log(e);
+        setError(
+          "Оставлять геометки могут только амбассадоры. Обратитесь в TG к @maxxnikitin"
+        );
       }
+    }
 
+    try {
       const updatedData = {
         ...userData,
         usernameTG: userData?.usernameTG?.toLowerCase(),
@@ -106,9 +112,7 @@ export const useYandexMap = () => {
       handleModalClose();
     } catch (e) {
       console.log(e);
-      setError(
-        "Оставлять геометки могут только амбассадоры. Обратитесь в TG к @maxxnikitin"
-      );
+      setError("Ошибка обработки запроса");
     } finally {
       setIsRequestLoading(false);
     }

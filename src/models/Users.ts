@@ -4,6 +4,7 @@ interface IUser extends Document {
   name: string;
   usernameTG: string;
   avatar: string;
+  avatarForRemove: string;
   description: string;
   coords: [number, number];
 }
@@ -12,6 +13,7 @@ const UserSchema: Schema<IUser> = new Schema({
   name: { type: String, required: true },
   usernameTG: { type: String, required: true },
   avatar: { type: String, required: false },
+  avatarForRemove: { type: String, required: false },
   description: { type: String, required: false },
   coords: {
     type: [Number],

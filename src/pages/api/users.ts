@@ -14,6 +14,12 @@ type ResponseData = {
   message: string;
 };
 
+export const config = {
+  api: {
+    bodyParser: false, // Отключение встроенного парсера тела запроса
+  },
+};
+
 const dbx = new Dropbox({
   accessToken: process.env.DROPBOX_TOKEN,
   fetch: fetch,
@@ -54,10 +60,11 @@ export default async function handler(
           const file = fileArray[0];
 
           let fileUrl: string | undefined;
+          let fileName: string | undefined;
 
           if (file) {
             const fileContent = fs.readFileSync(file.filepath);
-            const fileName = `${Date.now()}_${path.basename(file.filepath)}`;
+            fileName = `${Date.now()}_${path.basename(file.filepath)}`;
 
             try {
               const response = await dbx.filesUpload({
@@ -94,16 +101,17 @@ export default async function handler(
             description: description?.[0],
             coords: JSON.parse(coords![0]),
             avatar: fileUrl,
+            avatarForRemove: `/${fileName}`,
             usernameTG: usernameTG![0],
           };
 
           if (existingUser) {
-            if (existingUser.avatar && fileUrl) {
+            if (existingUser.avatarForRemove && fileUrl) {
               try {
-                await dbx.filesDeleteV2({ path: existingUser.avatar });
+                await dbx.filesDeleteV2({ path: existingUser.avatarForRemove });
               } catch (deleteError) {
                 console.error(
-                  `Failed to delete old file: ${existingUser.avatar}`,
+                  `111111, Failed to delete old file: ${existingUser.avatarForRemove}`,
                   deleteError
                 );
               }
