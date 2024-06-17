@@ -4,9 +4,10 @@ import { promisify } from "util";
 import fs from "fs";
 import formidable from "formidable";
 import { refreshDropboxToken } from "./api-server";
-import { loadTokensFromFile } from "./save-tokens";
 
 const fsUnlink = promisify(fs.unlink);
+
+let token: string | undefined;
 
 type TArgs = {
   fileName: string;
@@ -21,15 +22,13 @@ export const dropboxSaveFile = async ({
   file,
   avatarForRemove,
 }: TArgs) => {
-  let tokens = loadTokensFromFile();
-
-  if (!tokens) {
-    tokens = await refreshDropboxToken();
+  if (!token) {
+    token = await refreshDropboxToken();
   }
 
   try {
     const dbx = new Dropbox({
-      accessToken: tokens.access_token,
+      accessToken: token,
       fetch: fetch,
     });
 
@@ -62,7 +61,7 @@ export const dropboxSaveFile = async ({
     return fileUrl;
   } catch (e) {
     if ((e as any).message.error_summary.startsWith("expired_access_token")) {
-      await refreshDropboxToken();
+      token = await refreshDropboxToken();
       dropboxSaveFile({ fileName, fileContent, file });
     } else {
       console.log(e);
