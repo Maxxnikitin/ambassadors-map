@@ -67,10 +67,9 @@ export default async function handler(
             fileName = `${Date.now()}_${path.basename(file.filepath)}`;
 
             try {
-              await dropboxSaveFile({
+              fileUrl = await dropboxSaveFile({
                 fileName,
                 fileContent,
-                fileUrl,
                 file,
                 avatarForRemove: existingUser?.avatarForRemove,
               });
