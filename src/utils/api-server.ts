@@ -1,6 +1,5 @@
 import axios, { AxiosResponse } from "axios";
 import { TAuthResponse, TTGMessage, TUserData } from "./types";
-import { saveTokensToFile } from "./save-tokens";
 
 export const checkResponse: <T>(res: AxiosResponse<T>) => T | Promise<T> = (
   res
@@ -22,6 +21,5 @@ export const refreshDropboxToken = async () => {
     })
   );
 
-  saveTokensToFile(data);
-  return data;
+  return data.access_token;
 };

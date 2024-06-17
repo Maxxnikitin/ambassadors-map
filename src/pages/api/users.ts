@@ -2,12 +2,9 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import formidable, { Fields, Files } from "formidable";
 import fs from "fs";
 import path from "path";
-import fetch from "node-fetch";
-import { promisify } from "util";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/Users";
 import { AxiosError } from "axios";
-import { Dropbox, sharing } from "dropbox";
 import { dropboxSaveFile } from "@/utils/dropbox-save-file";
 
 type ResponseData = {

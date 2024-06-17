@@ -1,4 +1,3 @@
-import { saveTokensToFile } from "@/utils/save-tokens";
 import { TAuthResponse } from "@/utils/types";
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -23,7 +22,6 @@ export default async function handler(
       })
     );
 
-    saveTokensToFile(data);
     res.status(200).json(data);
   } catch (e) {
     return res.status(409).json({ message: (e as any).error });
