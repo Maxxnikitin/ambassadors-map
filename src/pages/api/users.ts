@@ -8,6 +8,7 @@ import dbConnect from "@/lib/mongodb";
 import User from "@/models/Users";
 import { AxiosError } from "axios";
 import { Dropbox, sharing } from "dropbox";
+import { dropboxSaveFile } from "@/utils/dropbox-save-file";
 
 type ResponseData = {
   data?: unknown;
@@ -19,13 +20,6 @@ export const config = {
     bodyParser: false, // Отключение встроенного парсера тела запроса
   },
 };
-
-const dbx = new Dropbox({
-  accessToken: process.env.DROPBOX_TOKEN,
-  fetch: fetch,
-});
-
-const fsUnlink = promisify(fs.unlink);
 
 export default async function handler(
   req: NextApiRequest,
@@ -62,38 +56,30 @@ export default async function handler(
           let fileUrl: string | undefined;
           let fileName: string | undefined;
 
+          const { name, usernameTG, description, coords } = fields;
+
+          const existingUser = await User.findOne({
+            usernameTG: usernameTG![0],
+          });
+
           if (file) {
             const fileContent = fs.readFileSync(file.filepath);
             fileName = `${Date.now()}_${path.basename(file.filepath)}`;
 
             try {
-              const response = await dbx.filesUpload({
-                path: `/${fileName}`,
-                contents: fileContent,
+              await dropboxSaveFile({
+                fileName,
+                fileContent,
+                fileUrl,
+                file,
+                avatarForRemove: existingUser?.avatarForRemove,
               });
-
-              const sharedLinkResponse =
-                await dbx.sharingCreateSharedLinkWithSettings({
-                  path: response.result.path_display!,
-                  settings: {
-                    requested_visibility: { ".tag": "public" },
-                  },
-                });
-
-              fileUrl = sharedLinkResponse.result.url.replace("dl=0", "raw=1"); // преобразование URL для прямого доступа к изображению
-              await fsUnlink(file.filepath);
             } catch (uploadError) {
               return res
                 .status(409)
                 .json({ message: (uploadError as any).error });
             }
           }
-
-          const { name, usernameTG, description, coords } = fields;
-
-          const existingUser = await User.findOne({
-            usernameTG: usernameTG![0],
-          });
 
           const newUser = {
             name: name![0],
@@ -105,16 +91,6 @@ export default async function handler(
           };
 
           if (existingUser) {
-            if (existingUser.avatarForRemove && fileUrl) {
-              try {
-                await dbx.filesDeleteV2({ path: existingUser.avatarForRemove });
-              } catch (deleteError) {
-                console.error(
-                  `111111, Failed to delete old file: ${existingUser.avatarForRemove}`,
-                  deleteError
-                );
-              }
-            }
             await User.findOneAndUpdate(
               { usernameTG: newUser.usernameTG },
               newUser,
