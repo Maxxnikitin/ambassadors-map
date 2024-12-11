@@ -82,7 +82,7 @@ export default async function handler(
             description: description?.[0],
             coords: JSON.parse(coords![0]),
             avatar: fileUrl,
-            avatarForRemove: `/${fileName}`,
+            avatarForRemove: fileName ? `/${fileName}` : undefined,
             usernameTG: usernameTG![0],
           };
 
