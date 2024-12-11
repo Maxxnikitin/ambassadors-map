@@ -90,6 +90,8 @@ export const useYandexMap = () => {
         setError(
           "Оставлять геометки могут только амбассадоры. Обратитесь в TG к @maxxnikitin"
         );
+        setIsRequestLoading(false);
+        return;
       }
     }
 
